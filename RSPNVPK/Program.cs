@@ -15,6 +15,7 @@ namespace RSPNVPK
             }
 
             var silent = false;
+            var backup = true;
 
             if(args.Length > 1)
             {
@@ -22,6 +23,8 @@ namespace RSPNVPK
                 {
                     if (args[i] == "-s" || args[i] == "/s")
                         silent = true;
+                    if (args[i] == "-nb" || args[i] == "/nb")
+                        backup = false;
                 }
             }
 
@@ -32,12 +35,10 @@ namespace RSPNVPK
                 return;
             }
 
-            var vpkBackup = vpkdir.Replace("_dir.vpk", "_BACKUP.vpk");
-            var number = 0;
-            while (File.Exists(vpkBackup))
+            if (backup)
             {
-                number++;
-                vpkBackup = vpkBackup.Replace("_BACKUP.vpk", $"_BACKUP({number}).vpk");
+                var vpkBackup = vpkdir.Replace("_dir.vpk", $"_BACKUP({DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}).vpk"); // Backup file name
+                File.Copy(vpkdir, vpkBackup, true); // Copies file and overwrites old backup
             }
 
             var vpkarch = vpkdir.Replace("_dir.vpk", "_228.vpk").Replace("english", "");
@@ -55,7 +56,9 @@ namespace RSPNVPK
 
             if (!silent)
             {
-                Console.WriteLine(@"
+                if (backup)
+                {
+                    Console.WriteLine(@"
  _____ _   _ ___ ____    _____ ___   ___  _
 |_   _| | | |_ _/ ___|  |_   _/ _ \ / _ \| |
   | | | |_| || |\___ \    | || | | | | | | |
@@ -74,6 +77,7 @@ namespace RSPNVPK
 | |_) / ___ \ |___| . \| |_| |  __/ ___) |_|_|_|
 |____/_/   \_\____|_|\_\\___/|_|   |____/(_|_|_)
 ");
+                }
                 Console.WriteLine("Press Enter to continue");
                 Console.ReadLine();
             }
@@ -136,9 +140,12 @@ namespace RSPNVPK
             writer.BaseStream.Position = 0;
             VPK.DirFile.Write(writer, list.ToArray());
 
-            Console.WriteLine("Done!\nPress Enter to exit!");
-            if(!silent)
+            Console.WriteLine("Done!");
+            if (!silent)
+            {
+                Console.WriteLine("Press Enter to exit!");
                 Console.ReadLine();
+            }
         }
     }
 }
