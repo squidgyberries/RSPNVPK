@@ -15,6 +15,7 @@ namespace RSPNVPK
             }
 
             var silent = false;
+            var backup = true;
 
             if(args.Length > 1)
             {
@@ -22,6 +23,8 @@ namespace RSPNVPK
                 {
                     if (args[i] == "-s" || args[i] == "/s")
                         silent = true;
+                    if (args[i] == "-nb" || args[i] == "/nb")
+                        backup = false;
                 }
             }
 
@@ -30,6 +33,12 @@ namespace RSPNVPK
             {
                 Console.WriteLine($"Invalid directory file {vpkdir}");
                 return;
+            }
+
+            if (backup)
+            {
+                var vpkBackup = vpkdir.Replace("_dir.vpk", $"_BACKUP({DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss")}).vpk"); // Backup file name
+                File.Copy(vpkdir, vpkBackup, true); // Copies file and overwrites old backup
             }
 
             var vpkarch = vpkdir.Replace("_dir.vpk", "_228.vpk").Replace("english", "");
@@ -47,18 +56,20 @@ namespace RSPNVPK
 
             if (!silent)
             {
-                Console.WriteLine(@"
+                if (backup)
+                {
+                    Console.WriteLine(@"
  _____ _   _ ___ ____    _____ ___   ___  _
 |_   _| | | |_ _/ ___|  |_   _/ _ \ / _ \| |
   | | | |_| || |\___ \    | || | | | | | | |
   | | |  _  || | ___) |   | || |_| | |_| | |___
   |_| |_| |_|___|____/    |_| \___/ \___/|_____|
 
- ____   ___  _____ ____  _   _ _ _____   __  __    _    _  _______
-|  _ \ / _ \| ____/ ___|| \ | ( )_   _| |  \/  |  / \  | |/ / ____|
-| | | | | | |  _| \___ \|  \| |/  | |   | |\/| | / _ \ | ' /|  _|
-| |_| | |_| | |___ ___) | |\  |   | |   | |  | |/ ___ \| . \| |___
-|____/ \___/|_____|____/|_| \_|   |_|   |_|  |_/_/   \_\_|\_\_____|
+ ____   ___  _____ ____    __  __    _    _  _______
+|  _ \ / _ \| ____/ ___|  |  \/  |  / \  | |/ / ____|
+| | | | | | |  _| \___ \  | |\/| | / _ \ | ' /|  _|
+| |_| | |_| | |___ ___) | | |  | |/ ___ \| . \| |___
+|____/ \___/|_____|____/  |_|  |_/_/   \_\_|\_\_____|
 
  ____    _    ____ _  ___   _ ____  ____  _ _ _
 | __ )  / \  / ___| |/ / | | |  _ \/ ___|| | | |
@@ -66,6 +77,7 @@ namespace RSPNVPK
 | |_) / ___ \ |___| . \| |_| |  __/ ___) |_|_|_|
 |____/_/   \_\____|_|\_\\___/|_|   |____/(_|_|_)
 ");
+                }
                 Console.WriteLine("Press Enter to continue");
                 Console.ReadLine();
             }
@@ -128,9 +140,12 @@ namespace RSPNVPK
             writer.BaseStream.Position = 0;
             VPK.DirFile.Write(writer, list.ToArray());
 
-            Console.WriteLine("Done!\nPress Enter to exit!");
-            if(!silent)
+            Console.WriteLine("Done!");
+            if (!silent)
+            {
+                Console.WriteLine("Press Enter to exit!");
                 Console.ReadLine();
+            }
         }
     }
 }
